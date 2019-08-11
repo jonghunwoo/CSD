@@ -2,20 +2,17 @@ import urllib.request
 import csv
 import pandas as pd
 import matplotlib.pyplot as plt
-import  numpy as np
+import numpy as np
 
-APS_data = pd.read_csv("./APS_ACTIVITY_midterm.csv",encoding='unicode_escape')
+APS_data = pd.read_csv("./data/APS_ACTIVITY_midterm.csv",encoding='unicode_escape')
 
-df = APS_data[["CASENO", "PROJECTNO","ACTIVITYCODE", "LOCATIONCODE", "LOCATIONTYPE", "WORKTYPE",
-                              "MAINPROCESSCODE", "SUBPROCESSCODE", "PLANSTARTDATE", "PLANFINISHDATE", "PLANDURATION",
-                              "PLANMH", "VOL1","VOL2","VOL3", "ACTIVITYDESC", "STAGECODE"]]
+df = APS_data[["CASENO", "PROJECTNO","ACTIVITYCODE", "LOCATIONCODE", "LOCATIONTYPE", "WORKTYPE", "MAINPROCESSCODE", "SUBPROCESSCODE", "PLANSTARTDATE", "PLANFINISHDATE", "PLANDURATION", "PLANMH", "VOL1","VOL2","VOL3", "ACTIVITYDESC", "STAGECODE"]]
 
 df['Zeros'] = '0'
 
-df['ProcessCode'] = df['WORKTYPE'] + df['MAINPROCESSCODE'] + df['Zeros'] + df['SUBPROCESSCODE'].apply(str) + \
-                    df['STAGECODE'].apply(str)
+df['ProcessCode'] = df['WORKTYPE'] + df['MAINPROCESSCODE'] + df['Zeros'] + df['SUBPROCESSCODE'].apply(str) + df['STAGECODE'].apply(str)
 
-TargetProcessdf = pd.read_csv("./TargetActivity.csv",encoding='unicode_escape')
+TargetProcessdf = pd.read_csv("./data/TargetActivity.csv",encoding='unicode_escape')
 
 TargetProcessdf['AvgDuration'] = '0'
 
