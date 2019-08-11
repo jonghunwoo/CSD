@@ -4,6 +4,7 @@ import xlrd
 import csv
 import pandas as pd
 import datetime
+import numpy as np
 
 # ./data 폴더에 해당 파일이 없으면 실행
 if not os.path.isfile('./data/block_transfer_list.csv'):
@@ -77,19 +78,54 @@ df['OFT_ACTL_DURATION'] = df['OFT_ACTL_FD'] - df['OFT_ACTL_SD']
 df['PNT_PLN_DURATION'] = df['PNT_PLN_FD'] - df['PNT_PLN_SD']
 df['PNT_ACTL_DURATION'] = df['PNT_ACTL_FD'] - df['PNT_ACTL_SD']
 
+# 각 공정의 평균과 표준편차를 구하여 변동성 계수 계산
 CV_ASSY_PLN_DURATION = df['ASSY_PLN_DURATION'].std(axis=0)/df['ASSY_PLN_DURATION'].mean(axis=0)
 CV_ASSY_ACTL_DURATION = df['ASSY_ACTL_DURATION'].std(axis=0)/df['ASSY_ACTL_DURATION'].mean(axis=0)
 
-print("#" * 20, "AVG and STD of each process duration", "#"*20)
+CV_OFT_PLN_DURATION = df['OFT_PLN_DURATION'].std(axis=0)/df['OFT_PLN_DURATION'].mean(axis=0)
+CV_OFT_ACTL_DURATION = df['OFT_ACTL_DURATION'].std(axis=0)/df['OFT_ACTL_DURATION'].mean(axis=0)
+
+CV_PNT_PLN_DURATION = df['PNT_PLN_DURATION'].std(axis=0)/df['PNT_PLN_DURATION'].mean(axis=0)
+CV_PNT_ACTL_DURATION = df['PNT_ACTL_DURATION'].std(axis=0)/df['PNT_ACTL_DURATION'].mean(axis=0)
+
+# 공정별 평균/표준편차 및 변동성 계수 출력
+print("#" * 20, "AVG and STD of assembly process duration", "#"*20)
 print("Planning average duration of assembly: ", df['ASSY_PLN_DURATION'].mean(axis=0))
 print("Actual average duration of assembly: ", df['ASSY_ACTL_DURATION'].mean(axis=0))
 print("STD of planning duration of assembly", df['ASSY_PLN_DURATION'].std(axis=0))
 print("STD of actual duration of assembly", df['ASSY_ACTL_DURATION'].std(axis=0))
 
+print("#" * 20, "AVG and STD of outfitting process duration", "#"*20)
+print("Planning average duration of outfitting: ", df['OFT_PLN_DURATION'].mean(axis=0))
+print("Actual average duration of outfitting: ", df['OFT_ACTL_DURATION'].mean(axis=0))
+print("STD of planning duration of outfitting", df['OFT_PLN_DURATION'].std(axis=0))
+print("STD of actual duration of outfitting", df['OFT_ACTL_DURATION'].std(axis=0))
+
+print("#" * 20, "AVG and STD of painting process duration", "#"*20)
+print("Planning average duration of painting: ", df['PNT_PLN_DURATION'].mean(axis=0))
+print("Actual average duration of painting: ", df['PNT_ACTL_DURATION'].mean(axis=0))
+print("STD of planning duration of painting", df['PNT_PLN_DURATION'].std(axis=0))
+print("STD of actual duration of painting", df['PNT_ACTL_DURATION'].std(axis=0))
+
 print("#" * 24, "CV each process duration", "#"*28)
 print("CV of planning duration of assembly", CV_ASSY_PLN_DURATION)
 print("CV of actual duration of assembly", CV_ASSY_ACTL_DURATION)
+print("CV of planning duration of outfitting", CV_OFT_PLN_DURATION)
+print("CV of actual duration of outfitting", CV_OFT_ACTL_DURATION)
+print("CV of planning duration of painting", CV_PNT_PLN_DURATION)
+print("CV of actual duration of painting", CV_PNT_ACTL_DURATION)
 
+# 일별 평균 산출
+grouped = df['BLK_NO_WITH_PROJ_NO'].groupby(df["PNT_PLN_FD"])
+TH_AVG = grouped.count().mean()
 
+# 공정별 평균/표준편차 및 변동성 계수 출력
 
+#공정 모델
+#[:,0] : part processing time (parts/hr)
+#[:,1] : CV of part processing time
+#[:,2] : unit price of facility
+#[:,3] : number of facility or process
+
+param_process = np.array([[42, 2, 50, 3],[42, 2, 50, 3], [25, 1, 100, 6])
 
