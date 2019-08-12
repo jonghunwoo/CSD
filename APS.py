@@ -22,7 +22,7 @@ for i in range(TargetProcessdf.shape[0]):
     TargetProcessdf['AvgDuration'][i] = TargetProcessAvgDuration
 
 for i in range(TargetProcessdf.shape[0]):
-    print(TargetProcessdf['AvgDuration'][i])
+    print(TargetProcessdf['ProcessCode'][i],TargetProcessdf['AvgDuration'][i])
 
 ###주요 직종 액티비티 코드 표 - 총 17개
 ## 선각
