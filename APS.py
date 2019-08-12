@@ -21,6 +21,9 @@ for i in range(TargetProcessdf.shape[0]):
     TargetProcessAvgDuration = TargetProcessRows['PLANDURATION'].mean()
     TargetProcessdf['AvgDuration'][i] = TargetProcessAvgDuration
 
+for i in range(TargetProcessdf.shape[0]):
+    print(TargetProcessdf['AvgDuration'][i])
+
 ###주요 직종 액티비티 코드 표 - 총 17개
 ## 선각
 # 소조립(중조용) HA011

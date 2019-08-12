@@ -117,15 +117,66 @@ print("CV of actual duration of painting", CV_PNT_ACTL_DURATION)
 
 # 일별 평균 산출
 grouped = df['BLK_NO_WITH_PROJ_NO'].groupby(df["PNT_PLN_FD"])
-TH_AVG = grouped.count().mean()
+TH_AVG = grouped.count().mean() / 8 # blocks / HR
+
+print("Average Throughput : ", TH_AVG)
 
 # 공정별 평균/표준편차 및 변동성 계수 출력
 
 #공정 모델
-#[:,0] : part processing time (parts/hr)
+#[:,0] : part processing time (days/block)
 #[:,1] : CV of part processing time
 #[:,2] : unit price of facility
 #[:,3] : number of facility or process
 
-param_process = np.array([[42, 2, 50, 3],[42, 2, 50, 3], [25, 1, 100, 6])
+ASSY_PLN_DURATION = (df['ASSY_PLN_DURATION'].mean(axis=0).total_seconds())/(3600*3)
+OFT_PLN_DURATION = (df['OFT_PLN_DURATION'].mean(axis=0).total_seconds())/(3600*3)
+PNT_PLN_DURATION = (df['PNT_PLN_DURATION'].mean(axis=0).total_seconds())/(3600*3)
+
+param_process = np.array([[ASSY_PLN_DURATION, CV_ASSY_PLN_DURATION, 0, 700],
+                          [OFT_PLN_DURATION, CV_OFT_PLN_DURATION, 0, 360],
+                          [PNT_PLN_DURATION, CV_PNT_PLN_DURATION, 0, 195]])
+print(param_process)
+
+# 각 공정의 단위 제품 effective time 계산
+te = np.zeros(3)
+te = param_process[:, 0]
+print("Te : ", te)
+
+#각 공정 생산 시간의 변동성 (SCV: Squared Coefficient of Variability)
+ce_2 = np.zeros(3)
+ce_2 = np.power(param_process[:, 1],2)
+print("SCV : ", ce_2)
+
+#각 공정의 가동률 (utilization)
+u = np.zeros(3)
+u = TH_AVG * te / param_process[:, 3]
+print("utilization : ", u)
+
+ca_2 = np.zeros(3)
+cd_2 = np.zeros(3)
+ca_2[0] = 1
+
+#전 공정의 출발률 변동성(cd_2[i]) = 후 공정의 도착률 변동성(ca_2[i+1])
+cd_2[0] = 1 + (1-np.power(u[0],2))*(ca_2[0]-1) + (np.power(u[0],2)/np.sqrt(param_process[0,3])) * (ce_2[0]-1)
+ca_2[1] = cd_2[0]
+cd_2[1] = 1 + (1-np.power(u[1],2))*(ca_2[1]-1) + (np.power(u[1],2)/np.sqrt(param_process[1,3])) * (ce_2[1]-1)
+ca_2[2] = cd_2[1]
+cd_2[2] = 1 + (1-np.power(u[2],2))*(ca_2[2]-1) + (np.power(u[2],2)/np.sqrt(param_process[2,3])) * (ce_2[2]-1)
+#ca_2[3] = cd_2[2]
+#cd_2[3] = 1 + (1-np.power(u[3],2))*(ca_2[3]-1) + (np.power(u[3],2)/np.sqrt(param_process[3,3])) * (ce_2[3]-1)
+
+# 설비수를 고려한 CT
+CTq = np.zeros(3)
+CT = np.zeros(3)
+CTq = [(ca_2 + ce_2)/2] * np.power(u,np.sqrt(2*(param_process[:, 3]+1))-1)/(param_process[:, 3]*(1-u))* te
+CT = CTq + te
+
+CTtot = np.sum(CT)
+WIPq = (CT-te) * TH_AVG
+#WIPq = np.ceil(WIPq)
+
+print("Total CT : ", CTtot)
+print("WIPq : ", WIPq)
+
 
