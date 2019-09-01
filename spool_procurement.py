@@ -34,10 +34,15 @@ data = pd.read_csv('./data/spool_list_rev.csv')
 df = data[["block", "spool_no", "line_no", "dia", "dia_unit", "length", "weight", "wo", "material_out", "cutting", "fitup", "welding", "inspection","nde","palleting", "spool_out","coating", "painting_in", "painting_start", "painting", "stock_in", "stock_out", "on_deck", "in_position", "install_fitup", "installation"]]
 #print(df.head(40))
 
+# 숫자로 되어 있는 각 날자를 문자열로 변환한 후 datetime을 위한 형식으로 변환
 for date in ["wo", "material_out", "cutting", "fitup", "welding", "inspection","nde","palleting", "spool_out","coating", "painting", "painting_in", "painting_start", "painting", "stock_in", "stock_out", "on_deck", "in_position", "install_fitup", "installation"]:
     df[date] = pd.TimedeltaIndex(df[date], unit='d') + datetime.datetime(1899,12,30)
 
 #print(df[["wo", "material_out", "cutting", "fitup", "welding", "inspection","nde","palleting", "spool_out","coating", "painting_in", "painting_start", "painting", "stock_in", "stock_out", "on_deck", "in_position", "install_fitup", "installation"]].head(10))
 print(df[["spool_no", "wo", "material_out", "cutting"]].head(10))
 
-#print(df.head(40))
+# 일별 평균 산출
+grouped = df['spool_no'].groupby(df["stock_out"])
+TH_AVG = grouped.count().mean() / 8 # spools / HR
+
+print(TH_AVG)
