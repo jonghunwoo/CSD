@@ -178,5 +178,3 @@ WIPq = (CT-te) * TH_AVG
 
 print("Total CT : ", CTtot)
 print("WIPq : ", WIPq)
-
-
