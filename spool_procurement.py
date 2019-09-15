@@ -33,52 +33,64 @@ data = pd.read_csv('./data/spool_list_rev.csv')
 # 필요한 column 로딩 - df에 저장
 df = data[["block", "spool_no", "line_no", "dia", "dia_unit", "length", "weight", "wo", "material_out", "cutting", "fitup", "welding", "inspection","nde","palleting", "spool_out","coating", "painting_in", "painting_start", "painting", "stock_in", "stock_out", "on_deck", "in_position", "install_fitup", "installation"]]
 
-#print(df.head(40))
-print(df[["spool_no", "wo", "material_out", "cutting"]].head(10))
+# 다음의 컬럼에 대하여 NaN이 있는 행 삭제 (결측치 처리)
+for data in ["nde", "inspection", "spool_out", "palleting", "painting", "painting_in"]:
+    df = df.dropna(subset=[data])
+
+#print('Remaining number of rows is', df.count())
+#print('Modified shape is ', df.shape)
 
 # 숫자로 되어 있는 각 날자를 문자열로 변환한 후 datetime을 위한 형식으로 변환
-for date in ["wo", "material_out", "cutting", "fitup", "welding", "inspection","nde","palleting", "spool_out","coating", "painting", "painting_in", "painting_start", "painting", "stock_in", "stock_out", "on_deck", "in_position", "install_fitup", "installation"]:
-    df[date] = pd.TimedeltaIndex(df[date], unit='d') + datetime.datetime(1899,12,30)
+for date in ["wo", "material_out", "cutting", "fitup", "welding", "inspection","nde","palleting", "spool_out","coating", "painting_in", "painting_start", "painting", "stock_in", "stock_out", "on_deck", "in_position", "install_fitup", "installation"]:
+    df[date] = datetime.datetime(1899,12,30) + pd.TimedeltaIndex(df[date], unit='d')
 
 # 각 작업 시간 기간 계산하여 새로운 변수에 저장
-df['ct_fab'] = (df['welding'] - df['cutting']).astype('timedelta64[D]') + 1
-df['ct_ins'] = (df['nde'] - df['inspection']).astype('timedelta64[D]') + 1
-df['ct_srt'] = (df['spool_out'] - df['palleting']).astype('timedelta64[D]') + 1
-df['ct_pnt'] = (df['painting'] - df['painting_in']).astype('timedelta64[D]') + 1
+df['ct_fab'] = (df['welding'] - df['cutting']).astype('timedelta64[D]')
+df['ct_ins'] = (df['nde'] - df['inspection']).astype('timedelta64[D]')
+df['ct_srt'] = (df['spool_out'] - df['palleting']).astype('timedelta64[D]')
+df['ct_pnt'] = (df['painting'] - df['painting_in']).astype('timedelta64[D]')
 
-print(df['ct_ins'].head(10))
-
-for date in ["ct_fab", "ct_ins", "ct_srt", "ct_pnt"]:
+for data in ['ct_fab', 'ct_ins', 'ct_srt', 'ct_pnt']:
     print(df[data].head(10))
 
 #각 공정의 평균과 표준편차를 구하여 변동성 계수 계산
-cv_fab = df['ct_fab'].std(axis=0)/df['ct_fab'].mean(axis=0)
-cv_ins = df['ct_ins'].std(axis=0)/df['ct_ins'].mean(axis=0)
-cv_srt = df['ct_srt'].std(axis=0)/df['ct_srt'].mean(axis=0)
-cv_pnt = df['ct_pnt'].std(axis=0)/df['ct_pnt'].mean(axis=0)
+ct_fab = (df['ct_fab'].mean(axis=0))
+ct_ins = (df['ct_ins'].mean(axis=0))
+ct_srt = (df['ct_srt'].mean(axis=0))
+ct_pnt = (df['ct_pnt'].mean(axis=0))
+
+print('Average cycle time of fabrication is ', ct_fab)
+print('Average cycle time of insptection is ', ct_ins)
+print('Average cycle time of sorting is ', ct_srt)
+print('Average cycle time of painting is ', ct_pnt)
+
+cv_fab = df['ct_fab'].std(axis=0)/ct_fab
+cv_ins = df['ct_ins'].std(axis=0)/ct_ins
+cv_srt = df['ct_srt'].std(axis=0)/ct_srt
+cv_pnt = df['ct_pnt'].std(axis=0)/ct_pnt
+
+print('CV of fabrication is ', cv_fab)
+print('CV cycle time of inspection is ', cv_ins)
+print('CV cycle time of sorting is ', cv_srt)
+print('CV cycle time of painting is ', cv_pnt)
 
 # 일별 평균 산출 # spools/HR
-grouped = df['spool_no'].groupby(df["stock_out"])
+grouped = df['spool_no'].groupby(df["painting"])
 TH_AVG = grouped.count().mean() / 8
 print("Final TH = ", TH_AVG)
 
 # 공정별 평균/표준편차 및 변동성 계수 출력
+    #공정 모델
+    #[:,0] : part processing time (days/block)
+    #[:,1] : CV of part processing time
+    #[:,2] : unit price of facility
+    #[:,3] : number of facility or process
 
-#공정 모델
-#[:,0] : part processing time (days/block)
-#[:,1] : CV of part processing time
-#[:,2] : unit price of facility
-#[:,3] : number of facility or process
+param_process = np.array([[ct_fab, cv_fab, 0, 14],
+                          [ct_ins, cv_ins, 0, 5],
+                          [ct_srt, cv_srt, 0, 2],
+                          [ct_pnt, cv_pnt, 0, 15]])
 
-ct_fab = (df['ct_fab'].mean(axis=0).total_seconds())/(3600*3)
-ct_ins = (df['ct_ins'].mean(axis=0).total_seconds())/(3600*3)
-ct_srt = (df['ct_srt'].mean(axis=0).total_seconds())/(3600*3)
-ct_pnt = (df['ct_pnt'].mean(axis=0).total_seconds())/(3600*3)
-
-param_process = np.array([[ct_fab, cv_fab, 0, 100],
-                          [ct_ins, cv_ins, 0, 100],
-                          [ct_srt, cv_srt, 0, 100]
-                          [ct_pnt, cv_pnt, 0, 100]])
 print(param_process)
 
 # 각 공정의 단위 제품 effective time 계산
