@@ -86,10 +86,10 @@ print("Final TH = ", TH_AVG)
     #[:,2] : unit price of facility
     #[:,3] : number of facility or process
 
-param_process = np.array([[ct_fab, cv_fab, 0, 14],
-                          [ct_ins, cv_ins, 0, 5],
-                          [ct_srt, cv_srt, 0, 2],
-                          [ct_pnt, cv_pnt, 0, 15]])
+param_process = np.array([[ct_fab, cv_fab, 0, 65],
+                          [ct_ins, cv_ins, 0, 20],
+                          [ct_srt, cv_srt, 0, 8],
+                          [ct_pnt, cv_pnt, 0, 70]])
 
 print(param_process)
 
