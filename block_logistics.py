@@ -133,9 +133,20 @@ ASSY_PLN_DURATION = (df['ASSY_PLN_DURATION'].mean(axis=0).total_seconds())/(3600
 OFT_PLN_DURATION = (df['OFT_PLN_DURATION'].mean(axis=0).total_seconds())/(3600*3)
 PNT_PLN_DURATION = (df['PNT_PLN_DURATION'].mean(axis=0).total_seconds())/(3600*3)
 
-param_process = np.array([[ASSY_PLN_DURATION, CV_ASSY_PLN_DURATION, 0, 700],
-                          [OFT_PLN_DURATION, CV_OFT_PLN_DURATION, 0, 360],
+ASSY_ACTL_DURATION = (df['ASSY_ACTL_DURATION'].mean(axis=0).total_seconds())/(3600*3)
+OFT_ACTL_DURATION = (df['OFT_ACTL_DURATION'].mean(axis=0).total_seconds())/(3600*3)
+PNT_ACTL_DURATION = (df['PNT_ACTL_DURATION'].mean(axis=0).total_seconds())/(3600*3)
+
+param_process = np.array([[ASSY_PLN_DURATION, CV_ASSY_PLN_DURATION, 0, 660],
+                          [OFT_PLN_DURATION, CV_OFT_PLN_DURATION, 0, 355],
                           [PNT_PLN_DURATION, CV_PNT_PLN_DURATION, 0, 195]])
+
+"""
+param_process = np.array([[ASSY_ACTL_DURATION, CV_ASSY_ACTL_DURATION, 0, 660],
+                          [OFT_ACTL_DURATION, CV_OFT_ACTL_DURATION, 0, 355],
+                          [PNT_ACTL_DURATION, CV_PNT_ACTL_DURATION, 0, 195]])
+"""
+
 print(param_process)
 
 # 각 공정의 단위 제품 effective time 계산
